@@ -81,12 +81,6 @@ def main_task_1(file_paths):
         column_lineage = process_sql_file(file_path)
         descriptions = generate_column_descriptions(column_lineage)
         for target_col, desc in descriptions:
-            # source_cols = ", ".join([str(col) for col in lineage[:-1]])  # All but the last are source columns
-            # target_col = str(lineage[-1])  # Convert the target column to a string
-
-            # print(f"Source Columns: {source_cols}")
-            # print(f"Target Column: {target_col}")
-        
             data.append([target_col, desc])
     
     save_to_excel(data)
