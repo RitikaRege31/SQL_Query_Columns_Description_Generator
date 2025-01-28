@@ -35,6 +35,7 @@ def process_sql_queries(request):
         sql_files = SQLFile.objects.all()
         
         results = []
+        raw_lineage = []  # For storing raw lineage data to generate graph
         seen_columns = set()  # Track processed columns
         
         for sql_file in sql_files:
@@ -52,7 +53,22 @@ def process_sql_queries(request):
                 # Skip already processed columns
                 if target_col_cleaned in seen_columns:
                     continue
+                # Store raw lineage data for graph
+                source_nodes = [{"id": f"{lineage_str_cleaned[idx]}-source", "data": {"label": lineage_str_cleaned[idx]}} for idx in range(len(lineage_str_cleaned)-1)]
+                target_node = {"id": f"{target_col_cleaned}-target", "data": {"label": target_col_cleaned}}
                 
+                edges = [{"id": f"{source_nodes[i]['id']}-{target_node['id']}-edge", "source": source_nodes[i]['id'], "target": target_node['id']} for i in range(len(source_nodes))]
+
+                raw_lineage.append({
+                    "nodes": source_nodes + [target_node],
+                    "edges": edges
+                })
+                # # Store raw lineage data for graph
+                # raw_lineage.append({
+                #     "source_columns": lineage_str_cleaned[:-1],
+                #     "target_column": target_col_cleaned
+                # })
+
                 # Generate prompt based on lineage length
                 if len(lineage_str_cleaned) == 2:
                     source_col, target_col_cleaned = lineage_str_cleaned
@@ -72,20 +88,21 @@ def process_sql_queries(request):
                         f" Description precise and at the same time it should contain all necessary information about calculations and purpose."
                         f"Descriptions should not exceed 50 words."
                     )
-                
-                # Use Google Generative AI to generate the description
-                response = model.generate_content(prompt)
-                description_cleaned = response.text.replace('<default>.', '')
-                
-                results.append({
-                    "target_column": target_col_cleaned,
-                    "description": description_cleaned
-                })
+                if request.GET.get('action') == 'description':
+                    # Use Google Generative AI to generate the description
+                    response = model.generate_content(prompt)
+                    description_cleaned = response.text.replace('<default>.', '')
+                    
+                    results.append({
+                        "target_column": target_col_cleaned,
+                        "description": description_cleaned
+                    })
                 
                 # Mark column as processed
                 seen_columns.add(target_col_cleaned)
                 time.sleep(2)
-        
+        if request.GET.get('action') != 'description':
+            return JsonResponse({"lineage_data": raw_lineage}, status=200)
         return JsonResponse({"results": results}, status=200)
     
     return JsonResponse({"error": "Invalid request method."}, status=405)

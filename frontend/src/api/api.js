@@ -29,3 +29,14 @@ export const fetchLineageData = async () => {
         throw error;
     }
 };
+
+// GET API: Fetch generated descriptions
+export const fetchDescriptions = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/sql/process/?action=description`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching descriptions:", error);
+        throw error;
+    }
+};
