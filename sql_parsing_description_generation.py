@@ -2,7 +2,7 @@ import os
 from sqllineage.runner import LineageRunner
 import pandas as pd
 import google.generativeai as genai
-
+import time
 # Configure the Google Studio AI API key
 genai.configure(api_key="AIzaSyDBzCOGz3cQLyNSRdcXeN7oEEO0J9OrQPU")
 model = genai.GenerativeModel("gemini-1.5-flash")
@@ -64,7 +64,8 @@ def generate_column_descriptions(column_lineage):
         description_cleaned = response.text.replace('<default>.', '')
         
         descriptions.append((target_col_cleaned, description_cleaned))
-        seen_columns.add(target_col_cleaned)  # Add this column to the seen set
+        seen_columns.add(target_col_cleaned) 
+        time.sleep(2)  # Add this column to the seen set
     
     return descriptions
 

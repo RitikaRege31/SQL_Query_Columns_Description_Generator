@@ -59,7 +59,8 @@ def process_sql_queries(request):
                     prompt = (
                         f"Generate a detailed description for the column {target_col_cleaned} in "
                         f"relation to the column {source_col}. The description should include "
-                        f"how the data is computed or derived, any transformations, and its purpose. "
+                        f"how the data is computed or derived, any transformations, and its purpose."
+                        f"Description precise and at the same time it should contain all necessary information about calculations and purpose."
                         f"Descriptions should not exceed 50 words."
                     )
                 else:
@@ -67,7 +68,8 @@ def process_sql_queries(request):
                     prompt = (
                         f"Generate a detailed description for a column derived from the following lineage: "
                         f"{cols}. The description should include "
-                        f"how the data is computed or derived, any transformations, and its purpose. "
+                        f"how the data is computed or derived, any transformations, and its purpose."
+                        f" Description precise and at the same time it should contain all necessary information about calculations and purpose."
                         f"Descriptions should not exceed 50 words."
                     )
                 
