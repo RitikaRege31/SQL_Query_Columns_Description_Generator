@@ -11,7 +11,7 @@ from sqllineage.runner import LineageRunner
 import google.generativeai as genai
 
 # Configure Google AI API key
-genai.configure(api_key="AIzaSyCpWDw-l0UIqyttx7y0RlgU3yVLJGi_ziI")
+genai.configure(api_key="AIzaSyDBzCOGz3cQLyNSRdcXeN7oEEO0J9OrQPU")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 @csrf_exempt

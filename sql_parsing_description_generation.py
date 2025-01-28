@@ -4,13 +4,13 @@ import pandas as pd
 import google.generativeai as genai
 
 # Configure the Google Studio AI API key
-genai.configure(api_key="AIzaSyCpWDw-l0UIqyttx7y0RlgU3yVLJGi_ziI")
+genai.configure(api_key="AIzaSyDBzCOGz3cQLyNSRdcXeN7oEEO0J9OrQPU")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 # Function to process SQL queries and generate column lineage
 def process_sql_file(file_path):
     # Define the file path here; this value can be changed as needed
-    file_path = "test2.sql"
+    file_path = "test.sql"
     
     # Check if the file exists
     if not os.path.exists(file_path):
