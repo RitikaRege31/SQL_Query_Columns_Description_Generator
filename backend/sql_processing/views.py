@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import SQLFile
 import os
 
-
+import time
 from sqllineage.runner import LineageRunner
 import google.generativeai as genai
 
@@ -82,6 +82,7 @@ def process_sql_queries(request):
                 
                 # Mark column as processed
                 seen_columns.add(target_col_cleaned)
+                time.sleep(2)
         
         return JsonResponse({"results": results}, status=200)
     
