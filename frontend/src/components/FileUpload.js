@@ -75,7 +75,7 @@ const FileUpload = () => {
     return (
         <div>
             <input type="file" multiple onChange={handleFileChange} />
-            <button onClick={handleUpload}>Upload</button>
+            <button onClick={handleUpload} className="bg-blue-500 text-white px-4 py-2 rounded">Upload</button>
             {status && <p>{status}</p>}
         </div>
     );
