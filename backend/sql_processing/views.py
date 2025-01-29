@@ -106,13 +106,7 @@ def process_sql_queries(request):
                     "nodes": source_nodes + [target_node],
                     "edges": edges
                 })
-                # # Store raw lineage data for graph
-                # raw_lineage.append({
-                #     "source_columns": lineage_str_cleaned[:-1],
-                #     "target_column": target_col_cleaned
-                # })
-
-                # Generate prompt based on lineage length
+                
                 if len(lineage_str_cleaned) == 2:
                     source_col, target_col_cleaned = lineage_str_cleaned
                     prompt = (

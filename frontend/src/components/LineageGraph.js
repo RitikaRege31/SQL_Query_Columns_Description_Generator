@@ -21,17 +21,6 @@ const LineageGraph = () => {
         }
     };
 
-    // const handleGenerateDescriptions = async () => {
-    //     setLoading(true);
-    //     try {
-    //         const response = await fetchDescriptions();
-    //         setDescriptions(response.results);
-    //     } catch (error) {
-    //         console.error("Error fetching descriptions:", error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
     const handleGenerateDescriptions = async () => {
         if (loading) return;  // Prevent multiple clicks triggering excessive requests
     
