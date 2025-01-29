@@ -65,7 +65,7 @@ def process_sql_queries(request):
         sql_files = SQLFile.objects.all()
         
         results = []
-        raw_lineage = []  # For storing raw lineage data to generate graph
+        lineage_data = [] # For storing raw lineage data to generate graph
         seen_columns = set()  # Track processed columns
         
         for sql_file in sql_files:
@@ -73,8 +73,26 @@ def process_sql_queries(request):
             column_lineage = runner.get_column_lineage()
             
             for lineage in column_lineage:
-                target_col = str(lineage[-1])
+                source_cols = [str(col) for col in lineage[:-1]]
+                target_col = str(lineage[-1]).replace('<default>.', '')
                 lineage_str = [str(col) for col in lineage]
+
+                relations = extract_relations(sql_file.content)
+
+                nodes = [{"id": col, "data": {"label": col}} for col in source_cols]
+                nodes.append({"id": target_col, "data": {"label": target_col, "is_target": True}})
+
+                edges = [
+                    {
+                        "id": f"{source}-{target_col}",
+                        "source": source,
+                        "target": target_col,
+                        "data": {"label": relations[i] if i < len(relations) else "UNKNOWN"}
+                    }
+                    for i, source in enumerate(source_cols)
+                ]
+
+                lineage_data.append({"nodes": nodes, "edges": edges})
                 
                 # Clean column names
                 target_col_cleaned = target_col.replace('<default>.', '')
@@ -84,34 +102,12 @@ def process_sql_queries(request):
                 if target_col_cleaned in seen_columns:
                     continue
                 
-               # Extract relations from the query
-                relations = extract_relations(sql_file.content)
-                
-                # Create nodes
-                source_nodes = [{"id": f"{lineage_str_cleaned[idx]}-source", "data": {"label": lineage_str_cleaned[idx]}} for idx in range(len(lineage_str_cleaned)-1)]
-                target_node = {"id": f"{target_col_cleaned}-target", "data": {"label": target_col_cleaned}}
-
-                # Create edges with correct relation labels
-                edges = [
-                    {
-                        "id": f"{source_nodes[i]['id']}-{target_node['id']}-edge",
-                        "source": source_nodes[i]['id'],
-                        "target": target_node['id'],
-                        "data": {"label": relations[i] if i < len(relations) else "UNKNOWN"}  # Assign operation label
-                    }
-                    for i in range(len(source_nodes))
-                ]
-
-                raw_lineage.append({
-                    "nodes": source_nodes + [target_node],
-                    "edges": edges
-                })
                 
                 if len(lineage_str_cleaned) == 2:
-                    source_col, target_col_cleaned = lineage_str_cleaned
+                    source_cols, target_col_cleaned = lineage_str_cleaned
                     prompt = (
                         f"Generate a detailed description for the column {target_col_cleaned} in "
-                        f"relation to the column {source_col}. The description should include "
+                        f"relation to the column {source_cols}. The description should include "
                         f"how the data is computed or derived, any transformations, and its purpose."
                         f"Description precise and at the same time it should contain all necessary information about calculations and purpose."
                         f"Descriptions should not exceed 50 words."
@@ -139,7 +135,7 @@ def process_sql_queries(request):
                 seen_columns.add(target_col_cleaned)
                 time.sleep(2)
         if request.GET.get('action') != 'description':
-            return JsonResponse({"lineage_data": raw_lineage}, status=200)
+            return JsonResponse({"lineage_data": lineage_data}, status=200)
         return JsonResponse({"results": results}, status=200)
     
     return JsonResponse({"error": "Invalid request method."}, status=405)

@@ -12,7 +12,6 @@ const LineageGraph = () => {
         setLoading(true);
         try {
             const response = await fetchLineageData();
-            console.log("Lineage data:", response);
             setLineageData(response.lineage_data);
         } catch (error) {
             console.error("Error fetching lineage data:", error);
@@ -38,23 +37,30 @@ const LineageGraph = () => {
 
     
 
-    const elements = lineageData.reduce((acc, lineage) => {
-        const nodes = lineage.nodes.map((node) => ({
-            data: { id: node.id, label: node.data.label || "No label" },
-        }));
+    // const elements = lineageData.reduce((acc, lineage) => {
+    //     const nodes = lineage.nodes.map((node) => ({
+    //         data: { id: node.id, label: node.data.label || "No label" },
+    //     }));
     
-        const edges = lineage.edges.map((edge) => ({
-            data: { 
-                id: edge.id, 
-                source: edge.source, 
-                target: edge.target, 
-                label: edge.data?.label || "UNKNOWN", // Use actual relation type
-            },
-        }));
+    //     const edges = lineage.edges.map((edge) => ({
+    //         data: { 
+    //             id: edge.id, 
+    //             source: edge.source, 
+    //             target: edge.target, 
+    //             label: edge.data?.label || "UNKNOWN", // Use actual relation type
+    //         },
+    //     }));
     
-        return [...acc, ...nodes, ...edges];
-    }, []);
-    
+    //     return [...acc, ...nodes, ...edges];
+    // }, []);
+    const elements = lineageData.flatMap(({ nodes, edges }) => [
+        ...nodes.map(node => ({
+            data: { id: node.id, label: node.data.label, isTarget: node.data.is_target || false }
+        })),
+        ...edges.map(edge => ({
+            data: { id: edge.id, source: edge.source, target: edge.target, label: edge.data.label }
+        }))
+    ]);
     
 
     return (
