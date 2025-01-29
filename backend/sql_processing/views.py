@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import SQLFile
 import os
-
+import re
 import time
 from sqllineage.runner import LineageRunner
 import google.generativeai as genai
@@ -28,6 +28,36 @@ def upload_sql_files(request):
         return JsonResponse({"message": "SQL files uploaded successfully."}, status=201)
     
     return JsonResponse({"error": "Invalid request method."}, status=405)
+
+
+def extract_relations(query):
+    """Extract SQL operations from a query using regex patterns."""
+    relations = []
+    
+    if re.search(r'\bJOIN\b', query, re.IGNORECASE):
+        relations.append("JOIN")
+    if re.search(r'\bUNION\b', query, re.IGNORECASE):
+        relations.append("UNION")
+    if re.search(r'\bLEFT JOIN\b', query, re.IGNORECASE):
+        relations.append("LEFT JOIN")
+    if re.search(r'\bRIGHT JOIN\b', query, re.IGNORECASE):
+        relations.append("RIGHT JOIN")
+    if re.search(r'\bINNER JOIN\b', query, re.IGNORECASE):
+        relations.append("INNER JOIN")
+    if re.search(r'\bOUTER JOIN\b', query, re.IGNORECASE):
+        relations.append("OUTER JOIN")
+    
+    # Check for mathematical operations
+    if re.search(r'\+', query):
+        relations.append("Addition")
+    if re.search(r'-', query):
+        relations.append("Subtraction")
+    if re.search(r'\*', query):
+        relations.append("Multiplication")
+    if re.search(r'/', query):
+        relations.append("Division")
+
+    return relations if relations else ["UNKNOWN"]
 
 def process_sql_queries(request):
     if request.method == 'GET':
@@ -53,11 +83,24 @@ def process_sql_queries(request):
                 # Skip already processed columns
                 if target_col_cleaned in seen_columns:
                     continue
-                # Store raw lineage data for graph
+                
+               # Extract relations from the query
+                relations = extract_relations(sql_file.content)
+                
+                # Create nodes
                 source_nodes = [{"id": f"{lineage_str_cleaned[idx]}-source", "data": {"label": lineage_str_cleaned[idx]}} for idx in range(len(lineage_str_cleaned)-1)]
                 target_node = {"id": f"{target_col_cleaned}-target", "data": {"label": target_col_cleaned}}
-                
-                edges = [{"id": f"{source_nodes[i]['id']}-{target_node['id']}-edge", "source": source_nodes[i]['id'], "target": target_node['id']} for i in range(len(source_nodes))]
+
+                # Create edges with correct relation labels
+                edges = [
+                    {
+                        "id": f"{source_nodes[i]['id']}-{target_node['id']}-edge",
+                        "source": source_nodes[i]['id'],
+                        "target": target_node['id'],
+                        "data": {"label": relations[i] if i < len(relations) else "UNKNOWN"}  # Assign operation label
+                    }
+                    for i in range(len(source_nodes))
+                ]
 
                 raw_lineage.append({
                     "nodes": source_nodes + [target_node],
