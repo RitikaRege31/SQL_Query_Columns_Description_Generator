@@ -1,5 +1,5 @@
 # SQL_Query_Columns_Description_Generator
-This Application takes a set of SQL Queries , extracts the information of columns and column transformations (Column Lineage) of source columns to target columns from the SQL queries, stores the transformation information in a Graph like data structure with nodes and edges, then converts it into a very interactive visualization of the lineage; Also, it sends the information to the Gemini AI via API and generates descriptions for all the columns using AI and displays them in the UI.
+This Application takes a set of SQL Queries , extracts the information of columns and column transformations (Column Lineage) of source columns to target columns from the SQL queries, stores the transformation information in a Graph like data structure with nodes and edges, then converts it into a very interactive visualization of the lineage; Also, it sends the information to the Gemini AI via API and generates descriptions for all the columns using AI and displays them in the form of an Interactive UI!
 
 # [Link to the demo working of the application](https://drive.google.com/file/d/1WeVuUSYk4DSJbabsc-n5zcFM36hRb-f9/view?usp=sharing)
 
